@@ -10,6 +10,14 @@ import {
   Divider,
   Slider,
 } from "@mui/material";
+
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import TabPanel, { a11yProps } from "./components/TabPanel";
+
+import UploadMaterials from "./components/UploadMaterials";
+
+// Setup the direction of text-based components - Theme direction.
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import { CacheProvider } from '@emotion/react';
@@ -17,6 +25,9 @@ import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { generateQuestionPrompt, regenerateQuestionPrompt } from "./prompts";
+import { hover } from "@testing-library/user-event/dist/hover";
+import GenerateQuestions from "./components/GenerateQuestions";
+import EditNSave from "./components/EditNSave";
 
 const FormTemplate = () => {
   // APIKey Definition.
@@ -136,12 +147,8 @@ const FormTemplate = () => {
   };
 
   // Right-to-Left Layout.
-  const theme = 
-    createTheme({
-      direction: 'rtl',
-      typography: {
-        fontFamily: "'Arial', 'Roboto', sans-serif", // Hebrew-compatible fonts
-      },
+  const theme = createTheme({
+      direction: 'rtl'
   });
 
   const cacheRtl = createCache({
@@ -149,158 +156,191 @@ const FormTemplate = () => {
     stylisPlugins: [prefixer, rtlPlugin],
   });
 
+  const [tabValue, setTabValue] = React.useState(0);
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
   return (
     <CacheProvider value={cacheRtl}>
       <ThemeProvider theme={theme}>
-        <Box p={3} dir="rtl">
-          <Typography variant="h5" gutterBottom>
-            מפתח API
-          </Typography>
-          <TextField
-            fullWidth
-            label="מפתח API"
-            name="apiKey"
-            value={apiKey}
-            onChange={handleApiKeyChange}
-            margin="normal"
-          />
-          <Grid container spacing={4}>
-            {/* Right Section */}
-            <Grid item xs={12} md={6}>
-              <Typography variant="h5" gutterBottom>
-                מחולל שאלות
-              </Typography>
-              <TextField
-                fullWidth
-                label="כותרת"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                margin="normal"
-                sx={{ textAlign: 'right' }}
-              />
-              <TextField
-                fullWidth
-                label="תיאור"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                margin="normal"
-                multiline
-                rows={3}
-                sx={{ textAlign: 'right' }}
-              />
-              <TextField
-                fullWidth
-                label="טקסט חומר"
-                name="materialText"
-                value={formData.materialText}
-                onChange={handleChange}
-                margin="normal"
-                multiline
-                rows={4}
-                sx={{ textAlign: 'right' }}
-              />
-              <Box display="flex" alignItems="center" mt={2}>
-                <Typography variant="body1" sx={{ ml: 2 }}>
-                  שאלות רב-ברירה?
-                </Typography>
-                <Switch
-                  name="isMultipleChoice"
-                  checked={formData.isMultipleChoice}
-                  onChange={handleChange}
-                />
-              </Box>
-              {formData.isMultipleChoice && (
-                <Slider
-                  value={answersAmount}
-                  onChange={handleAnswersAmount}
-                  min={2}
-                  max={10}
-                  step={1}
-                  valueLabelDisplay="auto"
-                  marks={[
-                    { value: 2, label: '2' },
-                    { value: 3, label: '3' },
-                    { value: 4, label: '4' },
-                    { value: 5, label: '5' },
-                    { value: 6, label: '6' },
-                    { value: 7, label: '7' },
-                    { value: 8, label: '8' },
-                    { value: 9, label: '9' },
-                    { value: 10, label: '10' },
-                  ]}
-                  sx={{ mt: 4 }}
-                />
-              )}
-              <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
-                שלח
-              </Button>
-            </Grid>
-
-            {/* Left Section */}
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>
-                שאלה
-              </Typography>
-              <Box p={2} border="1px solid #ccc" borderRadius="8px" bgcolor="#f9f9f9">
-                {loading ? (
-                  <Typography>טוען...</Typography>
-                ) : error ? (
-                  <Typography>{error}</Typography>
-                ) : (
-                  question && <Typography>{question}</Typography>
-                )}
-              </Box>
-              <Typography variant="h6" gutterBottom>
-                הסבר
-              </Typography>
-              <Box p={2} border="1px solid #ccc" borderRadius="8px" bgcolor="#f9f9f9">
-                {loading ? (
-                  <Typography>טוען...</Typography>
-                ) : error ? (
-                  <Typography>{error}</Typography>
-                ) : (
-                  explanation && <Typography>{explanation}</Typography>
-                )}
-              </Box>
-              <Typography variant="h6" gutterBottom>
-                פתרון
-              </Typography>
-              <Box p={2} border="1px solid #ccc" borderRadius="8px" bgcolor="#f9f9f9">
-                {loading ? (
-                  <Typography>טוען...</Typography>
-                ) : error ? (
-                  <Typography>{error}</Typography>
-                ) : (
-                  solution && <Typography>{solution}</Typography>
-                )}
-              </Box>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="body1">משוב:</Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                placeholder="הזן את המשוב שלך כאן..."
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                margin="normal"
-              />
-              <Box mt={2} display="flex" gap={2}>
-                <Button variant="outlined" color="primary" onClick={handleRegenerate}>
-                  צור מחדש
-                </Button>
-                <Button variant="contained" color="primary">
-                  שמור והמשך
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
+      <Box sx={{ width:'100%'}}>
+        <TextField
+          fullWidth
+          label="מפתח API"
+          name="apiKey"
+          value={apiKey}
+          onChange={handleApiKeyChange}
+          margin="normal"
+        />
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs onChange={handleTabChange}>
+            <Tab label='העלאת חומר' {...a11yProps(0)} />
+            <Tab label='יצירת שאלות' {...a11yProps(1)} />
+            <Tab label='עריכה ושמירה' {...a11yProps(2)} />
+          </Tabs>
         </Box>
+        <TabPanel value={tabValue} index={0} ><UploadMaterials /></TabPanel>
+        <TabPanel value={tabValue} index={1}><GenerateQuestions /></TabPanel>
+        <TabPanel value={tabValue} index={2}><EditNSave /></TabPanel>
+      </Box>
       </ThemeProvider>
     </CacheProvider>
   );
+
+
+
+    // <CacheProvider value={cacheRtl}>
+    //   <ThemeProvider theme={theme}>
+    //     <Box p={3} dir="rtl">
+    //       <Typography variant="h5" gutterBottom>
+    //         מפתח API
+    //       </Typography>
+    //       <TextField
+    //         fullWidth
+    //         label="מפתח API"
+    //         name="apiKey"
+    //         value={apiKey}
+    //         onChange={handleApiKeyChange}
+    //         margin="normal"
+    //       />
+    //       <Grid container spacing={4}>
+    //         {/* Right Section */}
+    //         <Grid item xs={12} md={6}>
+    //           <Typography variant="h5" gutterBottom>
+    //             מחולל שאלות
+    //           </Typography>
+    //           <TextField
+    //             fullWidth
+    //             label="כותרת"
+    //             name="title"
+    //             value={formData.title}
+    //             onChange={handleChange}
+    //             margin="normal"
+    //             sx={{ textAlign: 'right' }}
+    //           />
+    //           <TextField
+    //             fullWidth
+    //             label="תיאור"
+    //             name="description"
+    //             value={formData.description}
+    //             onChange={handleChange}
+    //             margin="normal"
+    //             multiline
+    //             rows={3}
+    //             sx={{ textAlign: 'right' }}
+    //           />
+    //           <TextField
+    //             fullWidth
+    //             label="טקסט חומר"
+    //             name="materialText"
+    //             value={formData.materialText}
+    //             onChange={handleChange}
+    //             margin="normal"
+    //             multiline
+    //             rows={4}
+    //             sx={{ textAlign: 'right' }}
+    //           />
+    //           <Box display="flex" alignItems="center" mt={2}>
+    //             <Typography variant="body1" sx={{ ml: 2 }}>
+    //               שאלות רב-ברירה?
+    //             </Typography>
+    //             <Switch
+    //               name="isMultipleChoice"
+    //               checked={formData.isMultipleChoice}
+    //               onChange={handleChange}
+    //             />
+    //           </Box>
+    //           {formData.isMultipleChoice && (
+    //             <Slider
+    //               value={answersAmount}
+    //               onChange={handleAnswersAmount}
+    //               min={2}
+    //               max={10}
+    //               step={1}
+    //               valueLabelDisplay="auto"
+    //               marks={[
+    //                 { value: 2, label: '2' },
+    //                 { value: 3, label: '3' },
+    //                 { value: 4, label: '4' },
+    //                 { value: 5, label: '5' },
+    //                 { value: 6, label: '6' },
+    //                 { value: 7, label: '7' },
+    //                 { value: 8, label: '8' },
+    //                 { value: 9, label: '9' },
+    //                 { value: 10, label: '10' },
+    //               ]}
+    //               sx={{ mt: 4 }}
+    //             />
+    //           )}
+    //           <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
+    //             שלח
+    //           </Button>
+    //         </Grid>
+
+    //         {/* Left Section */}
+    //         <Grid item xs={12} md={6}>
+    //           <Typography variant="h6" gutterBottom>
+    //             שאלה
+    //           </Typography>
+    //           <Box p={2} border="1px solid #ccc" borderRadius="8px" bgcolor="#f9f9f9">
+    //             {loading ? (
+    //               <Typography>טוען...</Typography>
+    //             ) : error ? (
+    //               <Typography>{error}</Typography>
+    //             ) : (
+    //               question && <Typography>{question}</Typography>
+    //             )}
+    //           </Box>
+    //           <Typography variant="h6" gutterBottom>
+    //             הסבר
+    //           </Typography>
+    //           <Box p={2} border="1px solid #ccc" borderRadius="8px" bgcolor="#f9f9f9">
+    //             {loading ? (
+    //               <Typography>טוען...</Typography>
+    //             ) : error ? (
+    //               <Typography>{error}</Typography>
+    //             ) : (
+    //               explanation && <Typography>{explanation}</Typography>
+    //             )}
+    //           </Box>
+    //           <Typography variant="h6" gutterBottom>
+    //             פתרון
+    //           </Typography>
+    //           <Box p={2} border="1px solid #ccc" borderRadius="8px" bgcolor="#f9f9f9">
+    //             {loading ? (
+    //               <Typography>טוען...</Typography>
+    //             ) : error ? (
+    //               <Typography>{error}</Typography>
+    //             ) : (
+    //               solution && <Typography>{solution}</Typography>
+    //             )}
+    //           </Box>
+    //           <Divider sx={{ my: 2 }} />
+    //           <Typography variant="body1">משוב:</Typography>
+    //           <TextField
+    //             fullWidth
+    //             multiline
+    //             rows={3}
+    //             placeholder="הזן את המשוב שלך כאן..."
+    //             value={feedback}
+    //             onChange={(e) => setFeedback(e.target.value)}
+    //             margin="normal"
+    //           />
+    //           <Box mt={2} display="flex" gap={2}>
+    //             <Button variant="outlined" color="primary" onClick={handleRegenerate}>
+    //               צור מחדש
+    //             </Button>
+    //             <Button variant="contained" color="primary">
+    //               שמור והמשך
+    //             </Button>
+    //           </Box>
+    //         </Grid>
+    //       </Grid>
+    //     </Box>
+    //   </ThemeProvider>
+    // </CacheProvider>
 };
 
 export default FormTemplate;
