@@ -13,7 +13,7 @@ def add_question():
 
     Expected JSON payload:
     {
-        "title": <<Question title>>,
+        "explanation": <<Question explanation>>,
         "question": <<The actual question>>,
         "answer": <<The answer to the question>>
     }
@@ -21,12 +21,12 @@ def add_question():
     try:
         # Extract data from the request
         data = request.json
-        title = data.get('title')
         question = data.get('question')
+        explanation = data.get('explanation')
         answer = data.get('answer')
 
         # Check if required fields are provided
-        if not title or not question or not answer:
+        if not explanation or not question or not answer:
             return (jsonify({"success": False,
                              "message": "Missing required fields"}),
                     400)
@@ -35,13 +35,14 @@ def add_question():
         question_id = str(uuid.uuid4())
         doc_ref = db.collection('Questions-General').document(f'Qu--{question_id}')
         doc_ref.set({
-            "title": title,
             "question": question,
+            "explanation": explanation,
             "answer": answer
         })
 
         return (jsonify({"success": True,
-                         "message": "Question added successfully!"}),
+                         "message": "Question added successfully!",
+                         "question_id": question_id}),
                 200)
 
     except Exception as e:
@@ -101,7 +102,7 @@ def update_question():
     Expected JSON payload:
     {
         "question_id": <<Said question ID>>,
-        "title": <<Updated title (optional)>>,
+        "explanation": <<Updated explanation (optional)>>,
         "question": <<Updated question (optional)>>,
         "answer": <<Updated answer (optional)>>
     }
@@ -109,7 +110,7 @@ def update_question():
     try:
         data = request.json
         question_id = data.get('question_id')
-        title = data.get('title')
+        explanation = data.get('explanation')
         question = data.get('question')
         answer = data.get('answer')
 
@@ -122,8 +123,8 @@ def update_question():
         # Update the specified fields
         doc_ref = db.collection('Questions-General').document(question_id)
         updates = {}
-        if title:
-            updates["title"] = title
+        if explanation:
+            updates["explanation"] = explanation
         if question:
             updates["question"] = question
         if answer:
