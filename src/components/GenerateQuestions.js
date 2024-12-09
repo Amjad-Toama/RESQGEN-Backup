@@ -1,16 +1,17 @@
 import { Box, Button, FormControl, FormControlLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from "@mui/material";
-
-import { useState } from "react";
+import { useQuestions } from '../contexts/QuestionsContext';
+import { useForm } from "../contexts/FormContext";
+import { useTabs } from "../contexts/TabsContext";
 
 const GenerateQuestions = () => {
-    const [difficulty, setDifficulty] = useState("Medium");
-    const [questionsAmount, setQuestionsAmount] = useState(5);
-    const [questionType, setQuestionType] = useState("openQuestion");
+    const { handleQuestionGeneration } = useQuestions();
+    const { formData, setFormData } = useForm();
+    const { setTabValue } = useTabs();
 
     const handleQuestionsAmount = (event) => {
         const value = Number(event.target.value);
         if (value >= 1 && value <= 20)
-            setQuestionsAmount(value);
+            setFormData(event);
     };
 
     return (
@@ -19,19 +20,21 @@ const GenerateQuestions = () => {
                 <FormControl fullWidth>
                     <InputLabel>רמת קושי</InputLabel>
                     <Select
-                        value={difficulty}
-                        label={difficulty}
-                        onChange={(event) => {setDifficulty(event.target.value)}}
+                        name="complexity"
+                        value={formData.complexity}
+                        label={formData.complexity}
+                        onChange={setFormData}
                     >
-                        <MenuItem value="Easy">קל</MenuItem>
-                        <MenuItem value="Medium">בינוני</MenuItem>
-                        <MenuItem value="Advanced">מתקדם</MenuItem>
+                        <MenuItem value="easy">קל</MenuItem>
+                        <MenuItem value="medium">בינוני</MenuItem>
+                        <MenuItem value="advanced">מתקדם</MenuItem>
                     </Select>
                 </FormControl>
                 <TextField
+                    name="questionsAmount"
                     label="מספר שאלות"
                     type="number"
-                    value={questionsAmount}
+                    value={formData.questionsAmount}
                     onChange={handleQuestionsAmount}
                     fullWidth
                 />
@@ -39,14 +42,14 @@ const GenerateQuestions = () => {
             <Box>
                 <Typography>סוג השאלות</Typography>
                 <FormControl>
-                    <RadioGroup name="questions-type" defaultValue="openQuestion" onChange={(event) => {setQuestionType(event.target.value)}} row>
-                        <FormControlLabel value="openQuestion" control={<Radio />} label="שאלות פתוחות"/> 
+                    <RadioGroup name="questionType" defaultValue={formData.questionType} onChange={setFormData} row>
+                        <FormControlLabel value="openEnded" control={<Radio />} label="שאלות פתוחות"/> 
                         <FormControlLabel value="multipleChoice" control={<Radio />} label="רב-ברירה"/>
                         <FormControlLabel value="trueFalse" control={<Radio />} label="נכון\לא נכון"/>
                     </RadioGroup>
                 </FormControl>
             </Box>
-            <Button variant="contained">צור שאלות</Button>
+            <Button onClick={() => {setTabValue(2); handleQuestionGeneration(formData)}} variant="contained">צור שאלות</Button>
         </Box>
     );
 };
