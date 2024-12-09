@@ -15,7 +15,7 @@ def add_question():
     {
         "explanation": <<Question explanation>>,
         "question": <<The actual question>>,
-        "answer": <<The answer to the question>>
+        "solution": <<The solution to the question>>
     }
     """
     try:
@@ -23,10 +23,10 @@ def add_question():
         data = request.json
         question = data.get('question')
         explanation = data.get('explanation')
-        answer = data.get('answer')
+        solution = data.get('solution')
 
         # Check if required fields are provided
-        if not explanation or not question or not answer:
+        if not explanation or not question or not solution:
             return (jsonify({"success": False,
                              "message": "Missing required fields"}),
                     400)
@@ -37,7 +37,7 @@ def add_question():
         doc_ref.set({
             "question": question,
             "explanation": explanation,
-            "answer": answer
+            "solution": solution
         })
 
         return (jsonify({"success": True,
@@ -104,7 +104,7 @@ def update_question():
         "question_id": <<Said question ID>>,
         "explanation": <<Updated explanation (optional)>>,
         "question": <<Updated question (optional)>>,
-        "answer": <<Updated answer (optional)>>
+        "solution": <<Updated solution (optional)>>
     }
     """
     try:
@@ -112,7 +112,7 @@ def update_question():
         question_id = data.get('question_id')
         explanation = data.get('explanation')
         question = data.get('question')
-        answer = data.get('answer')
+        solution = data.get('solution')
 
         # Check if the question ID is provided
         if not question_id:
@@ -127,8 +127,8 @@ def update_question():
             updates["explanation"] = explanation
         if question:
             updates["question"] = question
-        if answer:
-            updates["answer"] = answer
+        if solution:
+            updates["solution"] = solution
 
         if updates:
             doc_ref.update(updates)
