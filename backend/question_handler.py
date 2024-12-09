@@ -23,9 +23,11 @@ def add_question():
     try:
         # Extract data from the request
         data = request.json
+        print('Got data ', data)
         question = data.get('question')
         explanation = data.get('explanation')
         solution = data.get('solution')
+        print("Initialised data")
 
         # Check if required fields are provided
         if not explanation or not question or not solution:
@@ -36,11 +38,13 @@ def add_question():
         # Generate a unique question ID, then push
         question_id = str(uuid.uuid4())
         doc_ref = db.collection('Questions-General').document(f'Qu--{question_id}')
+        print("Established connection")
         doc_ref.set({
             "question": question,
             "explanation": explanation,
             "solution": solution
         })
+        print(f'Set new question as {question}, {explanation}, {solution}')
 
         return (jsonify({"success": True,
                          "message": "Question added successfully!",
