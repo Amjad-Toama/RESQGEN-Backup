@@ -1,9 +1,9 @@
 import uuid
 from flask import Flask, jsonify, request
 from firebase_config import db
+from flask_cors import CORS
 
 app = Flask(__name__)
-
 
 # Endpoint to add a new question
 @app.route('/api/add-question', methods=['POST'])
